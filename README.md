@@ -56,13 +56,11 @@ The game uses configuration files for customizable settings:
 - **config.json**: Defines player colors, terrain layouts, backgrounds, and tree sprites.
 - **Level files**: Defines terrain height, player starting positions, and obstacles.
 
-## Extensions
-Some optional extensions included:
-- **Additional Power-ups**: Shield and teleport functionality
-- **AI Players**: Computer-controlled tanks that can calculate projectile trajectories
+## Gameplay Video
+For a quick demonstration of the game in action, check out this gameplay video:
 
-## Screenshots
-(Include gameplay screenshots here if possible.)
+[![Watch the video](https://img.youtube.com/vi/OSJUIY-3Kmg/0.jpg)](https://www.youtube.com/watch?v=OSJUIY-3Kmg)
+
 
 ## Testing
 The project includes unit tests using **JUnit** with over 80% code coverage. To run tests:
