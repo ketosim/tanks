@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TerrainPixel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">TerrainPixel.java</span></div><h1>TerrainPixel.java</h1><pre class="source lang-java linenums">package Tanks;
+
+/**
+ * The TerrainPixel class represents a single pixel of the terrain in the game.
+ * It contains information about the height and color of the pixel, which can 
+ * represent different types of terrain or damage states.
+ */
+public class TerrainPixel {
+    private int height; // Height of this terrain pixel
+    private int color;  // Color can represent different types of terrain or damage states
+
+    /**
+     * Constructs a TerrainPixel with the specified height and color.
+     * 
+     * @param height The height of the terrain pixel.
+     * @param color The color of the terrain pixel.
+     */
+<span class="fc" id="L18">    public TerrainPixel(int height, int color) {</span>
+<span class="fc" id="L19">        this.height = height;</span>
+<span class="fc" id="L20">        this.color = color;</span>
+<span class="fc" id="L21">    }</span>
+
+    /**
+     * Gets the height of this terrain pixel.
+     * 
+     * @return The height of the terrain pixel.
+     */
+    public int getHeight() {
+<span class="nc" id="L29">        return height;</span>
+    }
+
+    /**
+     * Sets the height of this terrain pixel.
+     * 
+     * @param height The new height of the terrain pixel.
+     */
+    public void setHeight(int height) {
+<span class="nc" id="L38">        this.height = height;</span>
+<span class="nc" id="L39">    }</span>
+
+    /**
+     * Gets the color of this terrain pixel.
+     * 
+     * @return The color of the terrain pixel.
+     */
+    public int getColor() {
+<span class="fc" id="L47">        return color;</span>
+    }
+
+    /**
+     * Sets the color of this terrain pixel.
+     * 
+     * @param color The new color of the terrain pixel.
+     */
+    public void setColor(int color) {
+<span class="nc" id="L56">        this.color = color;</span>
+<span class="nc" id="L57">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

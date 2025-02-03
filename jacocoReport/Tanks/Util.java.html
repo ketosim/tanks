@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Util.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Util.java</span></div><h1>Util.java</h1><pre class="source lang-java linenums">package Tanks;
+
+
+import processing.core.PApplet;
+import processing.core.PImage;
+import processing.core.PVector;
+
+/**
+ * Some helper functions.
+ */
+
+<span class="nc" id="L12">public class Util {</span>
+    /**
+     * Parses an RGB string in the format &quot;r,g,b&quot; into an array of integers.
+     * @param rgb The RGB string.
+     * @return An array containing the red, green, and blue components.
+     */
+    public static int[] parseRGB(String rgb) {
+<span class="fc" id="L19">        String[] values = rgb.split(&quot;,&quot;);</span>
+<span class="fc" id="L20">        int[] colors = new int[3]; </span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        for (int i = 0; i &lt; 3; i++) {</span>
+<span class="fc" id="L22">            colors[i] = Integer.parseInt(values[i].trim());</span>
+        }
+<span class="fc" id="L24">        return colors;</span>
+    }
+
+    /**
+     * Creates a PVector from an angle in radians and scales it by a given factor.
+     * @param angle The angle in radians.
+     * @param magnitude The scaling factor.
+     * @return A new PVector pointing in the direction of the angle, scaled by the magnitude.
+     */
+    public static PVector fromAngleAndMagnitude(float angle, float magnitude) {
+<span class="fc" id="L34">        float x = PApplet.cos(angle) * magnitude;</span>
+<span class="fc" id="L35">        float y = PApplet.sin(angle) * magnitude;</span>
+<span class="fc" id="L36">        return new PVector(x, y);</span>
+    }
+
+    /**
+     * Maps a value from one range to another.
+     * @param value The value to be scaled.
+     * @param start1 The start of the first range.
+     * @param stop1 The end of the first range.
+     * @param start2 The start of the second range.
+     * @param stop2 The end of the second range.
+     * @return The mapped value.
+     */
+    public static float map(float value, float start1, float stop1, float start2, float stop2) {
+<span class="fc" id="L49">        return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));</span>
+    }
+
+    /**
+     * Updates the color of an image of pixels.
+     * @param image The image to be updated.
+     * @param color The new color.
+     */
+    public static void updateImageColor(PImage image, int color) {
+<span class="fc" id="L58">        image.loadPixels();</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (int i = 0; i &lt; image.width; i++) {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (int j = 0; j &lt; image.height; j++) {</span>
+<span class="fc" id="L61">                image.pixels[i + j * image.width] = color;</span>
+            }
+        }
+<span class="fc" id="L64">        image.updatePixels();</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Calculates the distance between two points.
+     * @param p1 The first point.
+     * @param p2 The second point.
+     * @return The distance between the two points.
+     */
+    public static float distance(PVector p1, PVector p2) {
+<span class="fc" id="L74">        float dx = p1.x - p2.x;</span>
+<span class="fc" id="L75">        float dy = p1.y - p2.y;</span>
+<span class="fc" id="L76">        return (float) Math.sqrt(dx * dx + dy * dy);</span>
+    }
+
+
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

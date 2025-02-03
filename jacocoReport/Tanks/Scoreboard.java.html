@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Scoreboard.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Scoreboard.java</span></div><h1>Scoreboard.java</h1><pre class="source lang-java linenums">package Tanks;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * The Scoreboard class manages the scores of players in the game.
+ * It provides methods to add, retrieve, and reset scores.
+ */
+public class Scoreboard {
+    private Map&lt;String, Integer&gt; scores;
+
+    /**
+     * Constructs a new Scoreboard with an empty score map.
+     */
+<span class="fc" id="L16">    public Scoreboard() {</span>
+<span class="fc" id="L17">        scores = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L18">    }</span>
+
+    /**
+     * Adds a score to the specified player's total score.
+     * If the player does not exist in the scoreboard, they are added with the given score.
+     *
+     * @param playerName The name of the player.
+     * @param score The score to be added to the player's total score.
+     */
+    public void addScore(String playerName, int score) {
+        // System.out.println(&quot;Score updating &quot; + playerName + &quot; +++++++ &quot; + score);
+<span class="fc" id="L29">        scores.put(playerName, scores.getOrDefault(playerName, 0) + score);</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Returns a map of player names to their corresponding scores.
+     *
+     * @return A map containing the scores of all players.
+     */
+    public Map&lt;String, Integer&gt; getScores() {
+<span class="fc" id="L38">        return new HashMap&lt;&gt;(scores); </span>
+    }
+
+    /**
+     * Resets the scoreboard, clearing all player scores.
+     */
+    public void reset() {
+<span class="fc" id="L45">        scores.clear();</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Returns the number of players with scores in the scoreboard.
+     *
+     * @return The number of players with scores.
+     */
+    public int getScoreCount() {
+<span class="nc" id="L54">        return scores.size();</span>
+    }
+
+    /**
+     * Returns the score of the specified player.
+     * If the player does not exist in the scoreboard, returns 0.
+     *
+     * @param playerName The name of the player.
+     * @return The score of the player, or 0 if the player does not exist.
+     */
+    public int getScore(String playerName) {
+<span class="fc" id="L65">        return scores.getOrDefault(playerName, 0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

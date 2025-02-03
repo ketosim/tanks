@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Tree.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Tree.java</span></div><h1>Tree.java</h1><pre class="source lang-java linenums">package Tanks;
+
+import processing.core.PApplet;
+import processing.core.PImage;
+import java.awt.Point;
+
+/**
+ * The Tree class represents a tree in the game. It contains the image and position of the tree,
+ * and provides methods to display the tree in the game.
+ */
+public class Tree {
+    private PImage image;  // The image representing the tree
+    private Point position; // The position of the tree in the game
+
+    /**
+     * Constructs a Tree object with the specified image and position.
+     * 
+     * @param image The image representing the tree.
+     * @param position The position of the tree.
+     */
+<span class="fc" id="L21">    public Tree(PImage image, Point position) {</span>
+<span class="fc" id="L22">        this.image = image;</span>
+<span class="fc" id="L23">        this.position = position;</span>
+<span class="fc" id="L24">    }</span>
+
+    /**
+     * Displays the tree on the screen using the specified PApplet instance.
+     * 
+     * @param app The PApplet instance used for drawing.
+     */
+    public void display(PApplet app) {
+        // Offset the position so that the trunk of the tree is the anchor point
+<span class="fc" id="L33">        app.image(image, position.x - App.CELLSIZE / 2, position.y - App.CELLSIZE + 2);</span>
+        // +2 moves the tree downward so the tree trunk is grounded into the soil
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Gets the position of the tree.
+     * 
+     * @return The position of the tree.
+     */
+    public Point getPosition() {
+<span class="fc" id="L43">        return position;</span>
+    }
+
+    /**
+     * Gets the image of the tree.
+     * 
+     * @return The image of the tree.
+     */
+    public PImage getImage() {
+<span class="nc" id="L52">        return image;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Level.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Level.java</span></div><h1>Level.java</h1><pre class="source lang-java linenums">package Tanks;
+
+import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PImage;
+import processing.core.PVector;
+import processing.data.JSONObject;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+
+/**
+ * The Level class manages all aspects of a game level, including terrain,
+ * trees, tanks, projectiles, and explosions. It also handles the display
+ * and update logic for each frame.
+ */
+public class Level {
+    private String layoutPath;
+    private PImage background;
+    private PApplet app;
+    private Wind wind;
+
+    private ArrayList&lt;TerrainPixel&gt; terrainPixels;
+    private ArrayList&lt;Tree&gt; trees;
+    private ArrayList&lt;Tank&gt; tanks;
+    private ArrayList&lt;Projectile&gt; projectiles;
+    private ArrayList&lt;Explosion&gt; explosions;
+
+    public int[] terrainHeights;
+<span class="fc" id="L31">    private int currentTankIndex = 0; // the assumption is there will be same number of players thru all levels</span>
+
+    private long arrowStartTime;
+    private static final int ARROW_DURATION = 2000; 
+<span class="fc" id="L35">    private boolean isArrowVisible = false;</span>
+    private PImage arrowImage;
+
+    private Scoreboard scoreboard;
+
+    /**
+     * Constructs a new Level.
+     * @param app The PApplet instance.
+     * @param levelConfig The JSON configuration for the level.
+     * @param colorsConfig The JSON configuration for the colors.
+     * @param scoreboard The scoreboard for tracking scores.
+     */
+<span class="fc" id="L47">    public Level(PApplet app, JSONObject levelConfig, JSONObject colorsConfig, Scoreboard scoreboard){</span>
+<span class="fc" id="L48">        this.app = app;</span>
+<span class="fc" id="L49">        this.layoutPath = levelConfig.getString(&quot;layout&quot;);</span>
+<span class="fc" id="L50">        this.background = app.loadImage(&quot;Tanks/&quot; + levelConfig.getString(&quot;background&quot;));</span>
+<span class="fc" id="L51">        this.projectiles = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L52">        this.wind = new Wind(app);</span>
+<span class="fc" id="L53">        this.explosions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L54">        this.scoreboard = scoreboard;</span>
+
+        // 2 seconds long arrow
+<span class="fc" id="L57">        this.arrowImage = app.loadImage(&quot;Tanks/arrow2.png&quot;);</span>
+<span class="fc" id="L58">        arrowImage.resize(App.CELLSIZE, App.CELLSIZE * 2);</span>
+<span class="fc" id="L59">        resetArrowTimer();</span>
+
+<span class="fc" id="L61">        loadLevelComponents(levelConfig, colorsConfig);</span>
+<span class="fc" id="L62">        initializeScores();</span>
+<span class="fc" id="L63">        tanks.sort(Comparator.comparing(Tank::getName));</span>
+<span class="fc" id="L64">        tanks.forEach(this::updateTankPosition);</span>
+
+<span class="fc" id="L66">    }</span>
+
+    /**
+     * Loads the components of the level such as terrain, trees, and tanks.
+     * @param levelConfig The JSON configuration for the level.
+     * @param colorsConfig The JSON configuration for the colors.
+     */
+    private void loadLevelComponents(JSONObject levelConfig, JSONObject colorsConfig) {
+<span class="fc" id="L74">        LayoutLoader loader = new LayoutLoader(app);</span>
+<span class="fc" id="L75">        String foregroundColour = levelConfig.getString(&quot;foreground-colour&quot;);</span>
+<span class="fc" id="L76">        int[] rgb = Util.parseRGB(foregroundColour);</span>
+<span class="fc" id="L77">        this.terrainPixels = loader.loadTerrainLayout(layoutPath, rgb[0], rgb[1], rgb[2]);</span>
+<span class="fc" id="L78">        this.terrainHeights = loader.getSmoothedHeights();</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (levelConfig.hasKey(&quot;trees&quot;)) {</span>
+<span class="fc" id="L81">            PImage treeImage = app.loadImage(&quot;Tanks/&quot; + levelConfig.getString(&quot;trees&quot;));</span>
+<span class="fc" id="L82">            treeImage.resize(App.CELLSIZE, App.CELLSIZE);</span>
+<span class="fc" id="L83">            this.trees = loader.loadTreeLayout(layoutPath, treeImage, terrainHeights);</span>
+        }
+
+<span class="fc" id="L86">        this.tanks = loader.loadTanksLayout(layoutPath, terrainHeights);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (Tank tank : tanks) {</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if (colorsConfig.hasKey(tank.getName())) {</span>
+<span class="fc" id="L89">                String tankColor = colorsConfig.getString(tank.getName());</span>
+<span class="fc" id="L90">                int[] rgbTank = Util.parseRGB(tankColor);</span>
+<span class="fc" id="L91">                tank.changeColor(app, rgbTank[0], rgbTank[1], rgbTank[2]);</span>
+            }
+<span class="fc" id="L93">        }</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Initializes the scores for each tank.
+     */
+    public void initializeScores() {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        for (Tank tank : tanks) {</span>
+<span class="fc" id="L101">            scoreboard.addScore(tank.getName(), 0);  // Initialize each tank's score to 0</span>
+<span class="fc" id="L102">        }</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Displays the current state of the level.
+     */
+    public void display() {
+<span class="fc" id="L109">        app.background(255);</span>
+<span class="fc" id="L110">        app.image(this.background, 0, 0);</span>
+<span class="fc" id="L111">        update();</span>
+<span class="fc" id="L112">        displayTerrain();</span>
+<span class="fc" id="L113">        displayTrees();</span>
+<span class="fc" id="L114">        displayProjectiles();</span>
+<span class="fc" id="L115">        displayWind();</span>
+<span class="fc" id="L116">        displayTankInfo();</span>
+<span class="fc" id="L117">        displayExplosions();</span>
+<span class="fc" id="L118">        displayTanks();</span>
+        
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Updates the state of the level.
+     */
+    public void update() {
+<span class="fc" id="L126">        updateArrowVisibility();</span>
+<span class="fc" id="L127">        updateTanks();       </span>
+<span class="fc" id="L128">        updateExplosions();</span>
+<span class="fc" id="L129">        updateProjectiles();</span>
+
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Updates the positions and states of all tanks in the level.
+     */
+    public void updateTanks() {
+<span class="fc" id="L137">        float deltaTime = 1.0f / App.FPS; // Calculate delta time based on frame rate</span>
+<span class="fc" id="L138">        ArrayList&lt;Tank&gt; activeTanks = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        for (Tank tank : tanks) {</span>
+            // Only update the tank position if it is not falling
+<span class="fc bfc" id="L141" title="All 2 branches covered.">            if (!tank.isFalling()) {</span>
+<span class="fc" id="L142">                updateTankPosition(tank);</span>
+            }
+<span class="fc" id="L144">            tank.update(app, deltaTime, terrainHeights); // Update the tank with delta time and terrain heights</span>
+            
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">            if (tank.isActive()) {</span>
+<span class="fc" id="L147">                activeTanks.add(tank); // Add the tank to the active tanks list</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        } else if (!tank.isDestroyed()) {</span>
+            // If the tank is destroyed but the explosion has not been created yet
+<span class="nc" id="L150">            createExplosion(new PVector(tank.getPosition().x, tank.getPosition().y), 30); // Create explosion</span>
+<span class="nc" id="L151">            tank.setDestroyed(true); // Mark the tank as destroyed</span>
+        }
+<span class="fc" id="L153">    }</span>
+<span class="fc" id="L154">    tanks = activeTanks; // Update the tanks list with active tanks</span>
+<span class="pc bpc" id="L155" title="2 of 4 branches missed.">    if (tanks.size() &gt; 0 &amp;&amp; currentTankIndex &gt;= tanks.size()) {</span>
+<span class="nc" id="L156">        currentTankIndex = 0; // Reset to the first tank if the current index is out of bounds</span>
+    }
+<span class="fc" id="L158">}</span>
+
+    /**
+     * Updates the visibility of the arrow indicating the current tank.
+     */
+    private void updateArrowVisibility() {
+<span class="fc" id="L164">        long currentTime = System.currentTimeMillis();</span>
+<span class="fc bfc" id="L165" title="All 4 branches covered.">        if (isArrowVisible &amp;&amp; (currentTime - arrowStartTime &gt; ARROW_DURATION)) {</span>
+<span class="fc" id="L166">            isArrowVisible = false;</span>
+<span class="fc" id="L167">            System.out.println(&quot;Arrow visibility turned off&quot;);</span>
+        }
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Updates the explosions in the level.
+     */
+    public void updateExplosions() {
+<span class="fc" id="L175">        Iterator&lt;Explosion&gt; it = explosions.iterator();</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        while (it.hasNext()) {</span>
+<span class="fc" id="L177">            Explosion explosion = it.next();</span>
+<span class="fc" id="L178">            explosion.update();</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">            if (explosion.isFinished()) {</span>
+<span class="fc" id="L180">                it.remove(); // Remove the explosion if it's finished</span>
+            }
+<span class="fc" id="L182">        }</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Updates the projectiles in the level.
+     */
+    public void updateProjectiles() {
+<span class="fc" id="L189">        Iterator&lt;Projectile&gt; it = projectiles.iterator();</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        while (it.hasNext()) {</span>
+<span class="fc" id="L191">            Projectile projectile = it.next();</span>
+<span class="fc" id="L192">            projectile.update(terrainHeights);</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">            if (!projectile.isActive()) {</span>
+<span class="fc" id="L194">                it.remove();</span>
+            }
+<span class="fc" id="L196">        }</span>
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Displays the terrain of the level.
+     */
+    private void displayTerrain() {
+<span class="fc" id="L203">        int x = 0;</span>
+<span class="fc" id="L204">        app.noStroke();</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        for (int height : terrainHeights) {</span>
+<span class="fc" id="L206">            app.fill(terrainPixels.get(0).getColor());</span>
+<span class="fc" id="L207">            app.rect(x, height, 1, App.HEIGHT - height);</span>
+<span class="fc" id="L208">            x++;</span>
+        }
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Displays the trees in the level.
+     */
+    private void displayTrees() {
+<span class="fc bfc" id="L216" title="All 2 branches covered.">        if (trees != null) {</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">            for (Tree tree : trees) {</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">                if (tree != null) tree.display(app);</span>
+<span class="fc" id="L219">            }</span>
+        }
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Displays the tanks in the level.
+     */
+    private void displayTanks() {
+<span class="fc bfc" id="L227" title="All 2 branches covered.">        for (int i = 0; i &lt; tanks.size(); i++) {</span>
+<span class="fc" id="L228">            Tank tank = tanks.get(i);</span>
+
+            // Only update the tank position if it is not falling
+<span class="fc bfc" id="L231" title="All 2 branches covered.">            if (!tank.isFalling()) {</span>
+<span class="fc" id="L232">                updateTankPosition(tank);</span>
+            }
+
+<span class="fc" id="L235">            tank.display(app);</span>
+
+<span class="fc bfc" id="L237" title="All 4 branches covered.">            if (i == currentTankIndex &amp;&amp; isArrowVisible) {</span>
+<span class="fc" id="L238">                float arrowX = tank.getPosition().x - App.CELLSIZE / 2.0f;</span>
+<span class="fc" id="L239">                float arrowY = tank.getPosition().y - App.CELLSIZE * 3;</span>
+<span class="fc" id="L240">                app.image(arrowImage, arrowX, arrowY);</span>
+            }
+        }
+<span class="fc" id="L243">    }</span>
+
+
+    /**
+     * Displays the projectiles in the level.
+     */
+    private void displayProjectiles() {
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        for (Projectile projectile : projectiles) {</span>
+<span class="fc" id="L251">            projectile.update(terrainHeights);</span>
+<span class="fc" id="L252">            projectile.display(app);</span>
+<span class="fc" id="L253">        }</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Displays the explosions in the level.
+     */
+    private void displayExplosions() {
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        for (Explosion explosion : explosions) {</span>
+<span class="fc" id="L261">            explosion.drawExplosion(app);</span>
+<span class="fc" id="L262">        }</span>
+<span class="fc" id="L263">    }</span>
+
+    /**
+     * Displays the wind in the level.
+     */
+    private void displayWind() {
+<span class="fc" id="L269">        wind.display(app, App.WIDTH - 80, App.CELLAVG / 4);</span>
+<span class="fc" id="L270">    }</span>
+
+    /**
+     * Displays the information of the current tank.
+     */
+    private void displayTankInfo() {
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">        if (currentTankIndex &lt; tanks.size()) {</span>
+<span class="fc" id="L277">            Tank currentTank = tanks.get(currentTankIndex);</span>
+<span class="fc" id="L278">            currentTank.displayUI(app, App.CELLAVG / 4, App.CELLAVG / 4);</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">            if (currentTank.isNextShotLarge()) {</span>
+<span class="fc" id="L280">                app.fill(0);  // Red text for emphasis</span>
+<span class="fc" id="L281">                app.text(&quot;Super-Sized Explosion&quot;, 8, 35);</span>
+            }
+        }
+<span class="fc" id="L284">    }</span>
+
+    /**
+     * Updates the position of the tank based on the terrain height.
+     * @param tank The tank to be updated.
+     */
+    private void updateTankPosition(Tank tank) {
+<span class="fc" id="L291">        int tankX = Math.max(0, Math.min((int) tank.getPosition().x, App.WIDTH - 1));</span>
+<span class="fc" id="L292">        int terrainY = terrainHeights[tankX];</span>
+<span class="fc" id="L293">        Point pos = tank.getPosition();</span>
+    
+<span class="pc bpc" id="L295" title="1 of 4 branches missed.">        if (pos.y &lt; terrainY &amp;&amp; !tank.isMoving()) {</span>
+<span class="fc" id="L296">            System.out.println(&quot;Tank &quot; +pos.y+  &quot;versus  terrain &quot; +terrainY + tank.getName() + &quot; is above terrain, starting to fall&quot;);</span>
+<span class="fc" id="L297">            tank.startFalling(); // Start falling if the tank is above the terrain</span>
+        } else {
+<span class="fc" id="L299">            pos.y = terrainY; // Set the tank directly on the terrain if it's not falling</span>
+<span class="fc" id="L300">            tank.stopFalling(); // Ensure the tank stops falling when it hits the terrain</span>
+        }
+    
+<span class="fc" id="L303">        tank.setPosition(pos);</span>
+<span class="fc" id="L304">    }</span>
+    
+
+    /**
+     * Resets the arrow timer for indicating the current tank.
+     */
+    private void resetArrowTimer() {
+<span class="fc" id="L311">        arrowStartTime = System.currentTimeMillis();</span>
+<span class="fc" id="L312">        isArrowVisible = true;</span>
+<span class="fc" id="L313">    }</span>
+
+    /**
+     * Modifies the terrain based on the explosion location and radius.
+     * @param location The location of the explosion.
+     * @param radius The radius of the explosion.
+     */
+    public void modifyTerrain(PVector location, float radius) {
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">        if (terrainHeights == null) {</span>
+<span class="nc" id="L322">            System.out.println(&quot;Error: terrainHeights is null&quot;);</span>
+<span class="nc" id="L323">            return;</span>
+        }
+        // for (Tank tank : tanks) {
+        //     Point pos = tank.getPosition();
+        //     int tankX = Math.max(0, Math.min((int) pos.x, App.WIDTH - 1));
+        //     int terrainY = terrainHeights[tankX];
+        //     // System.out.println(&quot;PRE MODIFY &quot; + tank.getPosition().x + &quot; &quot;+ tank.getPosition().y+ &quot;   &quot;+ terrainY);
+        // }
+    
+<span class="fc" id="L332">        int start = Math.max(0, (int) (location.x - radius));</span>
+<span class="fc" id="L333">        int end = Math.min(terrainHeights.length - 1, (int) (location.x + radius));</span>
+    
+<span class="fc bfc" id="L335" title="All 2 branches covered.">        for (int i = start; i &lt;= end; i++) {</span>
+<span class="fc" id="L336">            float dx = i - location.x;</span>
+<span class="fc" id="L337">            float dy = (float) Math.sqrt(radius * radius - dx * dx);</span>
+<span class="fc" id="L338">            float upperY = location.y - dy;</span>
+<span class="fc" id="L339">            float lowerY = location.y + dy;</span>
+    
+<span class="fc bfc" id="L341" title="All 2 branches covered.">            if (terrainHeights[i] &lt; upperY) {</span>
+<span class="fc" id="L342">                float explosionCoverage = 2 * dy;</span>
+<span class="fc" id="L343">                terrainHeights[i] = (int) (terrainHeights[i] + explosionCoverage);</span>
+            }
+    
+<span class="fc bfc" id="L346" title="All 4 branches covered.">            if (terrainHeights[i] &gt;= upperY &amp;&amp; terrainHeights[i] &lt;= lowerY) {</span>
+<span class="fc" id="L347">                terrainHeights[i] = (int) (lowerY);</span>
+            }
+        }
+   
+<span class="fc" id="L351">        updateTreePositions();</span>
+    
+        // Check and update tank positions after terrain modification
+<span class="fc bfc" id="L354" title="All 2 branches covered.">        for (Tank tank : tanks) {</span>
+<span class="fc" id="L355">            updateTankPosition(tank);</span>
+<span class="fc" id="L356">        }</span>
+<span class="fc" id="L357">    }</span>
+    
+
+    /**
+     * Updates the positions of the trees based on the terrain heights.
+     */
+    public void updateTreePositions() {
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">        if (trees != null) {</span>
+<span class="fc bfc" id="L365" title="All 2 branches covered.">            for (Tree tree : trees) {</span>
+<span class="pc bpc" id="L366" title="2 of 4 branches missed.">                if (tree != null &amp;&amp; tree.getPosition() != null) {</span>
+<span class="fc" id="L367">                    int terrainIndex = tree.getPosition().x;</span>
+<span class="pc bpc" id="L368" title="2 of 4 branches missed.">                    if (terrainIndex &gt;= 0 &amp;&amp; terrainIndex &lt; terrainHeights.length) {</span>
+<span class="fc" id="L369">                        tree.getPosition().y = terrainHeights[terrainIndex];</span>
+                    }
+                }
+<span class="fc" id="L372">            }</span>
+        }
+<span class="fc" id="L374">    }</span>
+
+    /**
+     * Handles key press events for tank controls and power-ups.
+     */
+    public void keyPressed() {
+<span class="pc bpc" id="L380" title="11 of 12 branches missed.">        switch (app.keyCode) {</span>
+            case PConstants.LEFT:
+<span class="nc" id="L382">                tanks.get(currentTankIndex).move(-60 / App.FPS);</span>
+<span class="nc" id="L383">                break;</span>
+            case PConstants.RIGHT:
+<span class="nc" id="L385">                tanks.get(currentTankIndex).move(60 / App.FPS);</span>
+<span class="nc" id="L386">                break;</span>
+            case PConstants.DOWN:
+<span class="nc" id="L388">                tanks.get(currentTankIndex).adjustTurret(false);</span>
+<span class="nc" id="L389">                break;</span>
+            case PConstants.UP:
+<span class="nc" id="L391">                tanks.get(currentTankIndex).adjustTurret(true);</span>
+<span class="nc" id="L392">                break;</span>
+            case 'W':
+            case 'w':
+<span class="nc" id="L395">                tanks.get(currentTankIndex).adjustPower(36 / App.FPS);</span>
+<span class="nc" id="L396">                System.out.println(tanks.get(currentTankIndex).getName() + &quot; has power of &quot; + tanks.get(currentTankIndex).getPower());</span>
+<span class="nc" id="L397">                break;</span>
+            case 'S':
+            case 's':
+<span class="nc" id="L400">                tanks.get(currentTankIndex).adjustPower(-36 / App.FPS);</span>
+<span class="nc" id="L401">                System.out.println(tanks.get(currentTankIndex).getName() + &quot; has power of &quot; + tanks.get(currentTankIndex).getPower());</span>
+<span class="nc" id="L402">                break;</span>
+            case 32:
+<span class="nc" id="L404">                fireProjectile();</span>
+<span class="nc" id="L405">                currentTankIndex = (currentTankIndex + 1) % tanks.size();</span>
+<span class="nc" id="L406">                System.out.println(&quot;Now controlling: &quot; + tanks.get(currentTankIndex).getName());</span>
+<span class="nc" id="L407">                resetArrowTimer();</span>
+<span class="nc" id="L408">                wind.updateWind();</span>
+<span class="nc" id="L409">                break;</span>
+            case 'R': // Repair action
+            case 'r':
+<span class="nc" id="L412">                attemptRepair(tanks.get(currentTankIndex));</span>
+<span class="nc" id="L413">                break;</span>
+            case 'F':
+            case 'f':
+<span class="nc" id="L416">                attemptedFuelUp(tanks.get(currentTankIndex));</span>
+<span class="nc" id="L417">                break;</span>
+            case 'X':
+            case 'x':
+<span class="nc" id="L420">                nextShotMightBeLarge(tanks.get(currentTankIndex));</span>
+<span class="nc" id="L421">                break;</span>
+            case 'P':
+            case 'p':
+<span class="nc" id="L424">                mightBuyAParachute(tanks.get(currentTankIndex));</span>
+                break;
+
+        }
+<span class="fc" id="L428">    }</span>
+
+    /**
+     * Fires a projectile from the current tank.
+     */
+    public void fireProjectile() {
+<span class="fc" id="L434">        Tank currentTank = tanks.get(currentTankIndex);</span>
+<span class="fc" id="L435">        PVector start = new PVector(currentTank.getPosition().x, currentTank.getPosition().y);</span>
+<span class="fc" id="L436">        float powerToPixel = Util.map(currentTank.getPower(), 0, 100, 2, 18);</span>
+<span class="fc" id="L437">        PVector velocity = Util.fromAngleAndMagnitude((float) currentTank.getTurretAngle(), powerToPixel);</span>
+
+<span class="fc" id="L439">        Projectile projectile = new Projectile(start, velocity, wind.getCurrentWind(), currentTank);</span>
+
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">        int radius = currentTank.isNextShotLarge() ? 60 : 30;  // Adjust radius based on power-up</span>
+    
+<span class="fc" id="L443">        projectile.setImpactListener(location -&gt; {</span>
+<span class="fc" id="L444">            int damageDone = calculateDamage(location, currentTank, radius);</span>
+<span class="pc bpc" id="L445" title="1 of 2 branches missed.">            if (damageDone &gt; 0) {</span>
+<span class="nc" id="L446">                getScoreboard().addScore(currentTank.getName(), damageDone);</span>
+            }
+
+<span class="fc" id="L449">            createExplosion(location, radius); // Ensure the explosion is triggered here</span>
+
+<span class="fc" id="L451">            modifyTerrain(location, radius); // Modify the terrain on impact</span>
+    
+            // Check and update tank positions after terrain modification
+<span class="fc bfc" id="L454" title="All 2 branches covered.">            for (Tank tank : tanks) {</span>
+<span class="fc" id="L455">                Point pos = tank.getPosition();</span>
+<span class="fc" id="L456">                int tankX = Math.max(0, Math.min((int) pos.x, App.WIDTH - 1));</span>
+<span class="fc" id="L457">                int terrainY = terrainHeights[tankX];</span>
+    
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">                if (pos.y &lt; terrainY) {</span>
+<span class="nc" id="L460">                    System.out.println(&quot;Tank &quot; + tank.getName() + &quot; is now above terrain after modification, starting to fall&quot;);</span>
+<span class="nc" id="L461">                    tank.startFalling();</span>
+                }
+<span class="fc" id="L463">            }</span>
+<span class="fc" id="L464">        });</span>
+    
+<span class="fc" id="L466">        projectiles.add(projectile);</span>
+<span class="fc" id="L467">        currentTank.setNextShotLarge(false);</span>
+<span class="fc" id="L468">    }</span>
+    
+
+    /**
+     * Calculates the damage dealt by a projectile.
+     * Apply health damage to tank victims.
+     * @param location The location of the explosion.
+     * @param tankOwner The tank that fired the projectile.
+     * @param explosionRadius The radius of the explosion.
+     * @return The total damage done.
+     */
+    public int calculateDamage(PVector location, Tank tankOwner, int explosionRadius) {
+<span class="fc" id="L480">        int maxDamage = 60; // Maximum possible damage, same for 30 and 60 rad explosions</span>
+<span class="fc" id="L481">        int damageDone = 0;</span>
+
+<span class="fc bfc" id="L483" title="All 2 branches covered.">        for (Tank tank : tanks) {</span>
+<span class="fc" id="L484">float distance = Util.distance(location, new PVector(tank.getPosition().x, tank.getPosition().y));</span>
+<span class="fc bfc" id="L485" title="All 2 branches covered.">            if (distance &lt;= explosionRadius ) {</span>
+<span class="fc" id="L486">                int damage = (int) (maxDamage - (distance / explosionRadius) * maxDamage);</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">                if (damage &gt; 0) {</span>
+<span class="fc" id="L488">                    System.out.println(&quot;damage done by &quot;+ tankOwner.getName() + &quot; to &quot; + tank.getName());</span>
+<span class="fc" id="L489">                    System.out.println(tank.getName()+ &quot; old health &quot; + tank.getHealth());</span>
+<span class="fc" id="L490">                    int newHealth = tank.getHealth() - (int) damage;</span>
+<span class="fc" id="L491">                    newHealth = Math.max(0, newHealth); </span>
+<span class="fc" id="L492">                    tank.setHealth(newHealth); </span>
+<span class="fc" id="L493">                    tank.setPower(Math.min(newHealth, tank.getPower())); // Update new power cap value</span>
+<span class="fc" id="L494">                    System.out.println(tank.getName()+ &quot; new health &quot; + tank.getHealth());</span>
+<span class="pc bpc" id="L495" title="1 of 2 branches missed.">                    if (tank != tankOwner){</span>
+<span class="fc" id="L496">                        damageDone += damage;</span>
+                    }
+                }
+            }
+<span class="fc" id="L500">        }</span>
+<span class="fc" id="L501">        System.out.println(tankOwner.getName() + &quot; gained total &quot; + damageDone);</span>
+<span class="fc" id="L502">        return damageDone;</span>
+    }
+
+    /**
+     * Creates an explosion at the given location with the specified radius.
+     * @param location The location of the explosion.
+     * @param radius The radius of the explosion.
+     */
+    public void createExplosion(PVector location, float radius) {
+<span class="fc" id="L511">        explosions.add(new Explosion(app, location, radius, this));</span>
+<span class="fc" id="L512">    }</span>
+
+    /**
+     * Attempts to repair the current tank.
+     * @param tank The current tank.
+     */
+    public void attemptRepair(Tank tank) {
+        // 'r' cost 20 score, health up 20 up to 100
+<span class="fc" id="L520">        int repairCost = 20;</span>
+<span class="fc" id="L521">        int repairAmount = 20;</span>
+<span class="fc" id="L522">        int maxHealth = 100;</span>
+<span class="fc" id="L523">        Scoreboard scoreboard = getScoreboard();</span>
+<span class="fc" id="L524">        int currentScore = scoreboard.getScore(tank.getName());</span>
+
+<span class="pc bpc" id="L526" title="1 of 4 branches missed.">        if (currentScore &gt;= repairCost &amp;&amp; tank.getHealth() &lt; 100) {</span>
+<span class="fc" id="L527">            int newHealth = Math.min(tank.getHealth() + repairAmount, maxHealth);</span>
+<span class="fc" id="L528">            tank.setHealth(newHealth);</span>
+<span class="fc" id="L529">            scoreboard.addScore(tank.getName(), -repairCost);</span>
+<span class="fc" id="L530">            System.out.println(tank.getName() + &quot; repaired to &quot; + newHealth + &quot;. Points left: &quot; + (currentScore - repairCost));</span>
+<span class="fc" id="L531">        } else {</span>
+<span class="fc" id="L532">            System.out.println(tank.getName() + &quot; cannot afford a repair.OR full health. Available: &quot; + currentScore);</span>
+        }
+<span class="fc" id="L534">    }</span>
+
+    /**
+     * Attempts to refuel the current tank.
+     * @param tank The current tank.
+     */
+    public void attemptedFuelUp(Tank tank) {
+        //'f' cost 10 score, fuel up 100
+<span class="fc" id="L542">        int fuelCost = 10;</span>
+<span class="fc" id="L543">        int fuelAmount = 100;</span>
+<span class="fc" id="L544">        Scoreboard scoreboard = getScoreboard();</span>
+<span class="fc" id="L545">        int currentScore = scoreboard.getScore(tank.getName());</span>
+
+<span class="fc bfc" id="L547" title="All 2 branches covered.">        if (currentScore &gt;= fuelCost) {</span>
+<span class="fc" id="L548">            int newFuel = tank.getFuel() + fuelAmount;</span>
+<span class="fc" id="L549">            tank.setFuel(newFuel);</span>
+<span class="fc" id="L550">            scoreboard.addScore(tank.getName(), -fuelCost);</span>
+<span class="fc" id="L551">            System.out.println(tank.getName() + &quot; fueled up to &quot; + newFuel );</span>
+<span class="fc" id="L552">        } else {</span>
+<span class="fc" id="L553">            System.out.println(tank.getName() + &quot; cannot afford a fuel up. &quot;);</span>
+        }
+<span class="fc" id="L555">    }</span>
+
+    /**
+     * Attempts to set the next shot to be a larger projectile.
+     * @param tank The current tank.
+     */
+    public void nextShotMightBeLarge(Tank tank) {
+<span class="fc" id="L562">        int fuelCost = 20;</span>
+<span class="fc" id="L563">        Scoreboard scoreboard = getScoreboard();</span>
+<span class="fc" id="L564">        int currentScore = scoreboard.getScore(tank.getName());</span>
+
+<span class="fc bfc" id="L566" title="All 2 branches covered.">        if (currentScore &gt;= fuelCost) {</span>
+<span class="fc" id="L567">            tank.setNextShotLarge(true);</span>
+<span class="fc" id="L568">            scoreboard.addScore(tank.getName(), -fuelCost);</span>
+<span class="fc" id="L569">            System.out.println(tank.getName() + &quot;Next shot will be a larger projectile.&quot;);</span>
+        } else {
+<span class="fc" id="L571">            System.out.println(tank.getName() + &quot;Not enough points to activate larger projectile.&quot;);</span>
+        }
+<span class="fc" id="L573">    }</span>
+
+    /**
+     * Attempts to buy one parachute
+     * @param tank The current tank.
+     */
+    public void mightBuyAParachute(Tank tank) {
+<span class="fc" id="L580">        int fuelCost = 15;</span>
+<span class="fc" id="L581">        Scoreboard scoreboard = getScoreboard();</span>
+<span class="fc" id="L582">        int currentScore = scoreboard.getScore(tank.getName());</span>
+
+<span class="fc bfc" id="L584" title="All 2 branches covered.">        if (currentScore &gt;= fuelCost) {</span>
+<span class="fc" id="L585">            tank.getParachutes().buyOneParachute();</span>
+<span class="fc" id="L586">            scoreboard.addScore(tank.getName(), -fuelCost);</span>
+
+<span class="fc" id="L588">            System.out.println(tank.getName() + &quot;Congrats on your purchase of a parachute!&quot;);</span>
+        } else {
+<span class="fc" id="L590">            System.out.println(tank.getName() + &quot;Not enough points to buy one parachute!&quot;);</span>
+        }
+<span class="fc" id="L592">    }</span>
+
+    /**
+     * Checks if the level should advance to the next level.
+     * @return True if the level should advance, otherwise false.
+     */
+    public boolean shallAdvanceLevel() {
+<span class="fc" id="L599">        int activeTanksCount = 0;</span>
+<span class="fc bfc" id="L600" title="All 2 branches covered.">        for (Tank tank : tanks) {</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">            if (tank.getHealth() &gt; 0) {</span>
+<span class="fc" id="L602">                activeTanksCount++;</span>
+            }
+<span class="fc" id="L604">        }</span>
+<span class="fc bfc" id="L605" title="All 2 branches covered.">        return activeTanksCount &lt;= 1;  // True if one or zero tanks are active</span>
+    }
+
+    // Getter methods
+    public PApplet getApp() {
+<span class="fc" id="L610">        return app;</span>
+    }
+
+    public ArrayList&lt;Tank&gt; getTanks() {
+<span class="fc" id="L614">        return tanks;</span>
+    }
+
+    public Scoreboard getScoreboard() {
+<span class="fc" id="L618">        return scoreboard;</span>
+    }
+
+    public void setCurrentTankIndex(int index) {
+<span class="nc" id="L622">        this.currentTankIndex = index;</span>
+<span class="nc" id="L623">    }</span>
+
+    public int getCurrentTankIndex() {
+<span class="nc" id="L626">        return currentTankIndex;</span>
+    }
+
+    public ArrayList&lt;Projectile&gt; getProjectiles(){
+<span class="fc" id="L630">        return projectiles;</span>
+    }
+   
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

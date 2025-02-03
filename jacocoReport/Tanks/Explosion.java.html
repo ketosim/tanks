@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Explosion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Explosion.java</span></div><h1>Explosion.java</h1><pre class="source lang-java linenums">package Tanks;
+
+import processing.core.PApplet;
+import processing.core.PVector;
+
+/**
+ * The Explosion class handles the visual representation and timing of an explosion
+ * in the game. It also provides methods to update and draw the explosion.
+ */
+public class Explosion {
+    private PVector location;
+    private float radius;
+    private Level level;
+<span class="fc" id="L14">    private float elapsedTime = 0;</span>
+<span class="fc" id="L15">    private float maxTime = 0.2f; // Total duration of explosion animation in seconds</span>
+
+    /**
+     * Constructs an Explosion object.
+     * 
+     * @param app      The PApplet instance.
+     * @param location The location of the explosion.
+     * @param radius   The radius of the explosion.
+     * @param level    The level in which the explosion occurs.
+     */
+<span class="fc" id="L25">    public Explosion(PApplet app, PVector location, float radius, Level level) {</span>
+<span class="fc" id="L26">        this.location = location;</span>
+<span class="fc" id="L27">        this.radius = radius;</span>
+<span class="fc" id="L28">        this.level = level;</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Updates the state of the explosion. This method should be called once per frame
+     * to update the explosion's animation.
+     */
+    public void update() {
+        // 1/30 = 0.0333 seconds
+        // 6 frames for explosion to finish
+<span class="fc" id="L38">        float oneFrameTime = 1.0f / App.FPS;</span>
+<span class="fc" id="L39">        elapsedTime += oneFrameTime;</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (elapsedTime &lt; maxTime) {</span>
+<span class="fc" id="L41">            drawExplosion(level.getApp());</span>
+        }
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Draws the explosion animation based on the elapsed time.
+     * 
+     * @param app The PApplet instance.
+     */
+    public void drawExplosion(PApplet app) {
+<span class="fc" id="L51">        float progress = elapsedTime / maxTime;</span>
+<span class="fc" id="L52">        drawCircle(app, progress, radius, 255, 0, 0);    // Red</span>
+<span class="fc" id="L53">        drawCircle(app, progress, radius * 0.5f, 255, 165, 0); // Orange</span>
+<span class="fc" id="L54">        drawCircle(app, progress, radius * 0.2f, 255, 255, 0);  // Yellow</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Draws a circle representing a part of the explosion.
+     * 
+     * @param app        The PApplet instance.
+     * @param progress   The progress of the explosion animation.
+     * @param baseRadius The base radius of the explosion.
+     * @param r          The red color component.
+     * @param g          The green color component.
+     * @param b          The blue color component.
+     */
+    private void drawCircle(PApplet app, float progress, float baseRadius, int r, int g, int b) {
+<span class="fc" id="L68">        float actualRadius = baseRadius * progress;</span>
+<span class="fc" id="L69">        app.noStroke();</span>
+<span class="fc" id="L70">        app.fill(r, g, b);</span>
+<span class="fc" id="L71">        app.ellipse(location.x, location.y, actualRadius * 2, actualRadius * 2);</span>
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Checks if the explosion animation is finished.
+     * 
+     * @return True if the explosion animation is finished, otherwise false.
+     */
+    public boolean isFinished() {
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        return elapsedTime &gt;= maxTime;</span>
+    }
+
+    public float getElapsedTime(){
+<span class="fc" id="L84">        return elapsedTime;</span>
+    }
+
+
+public float getMaxTime() {
+<span class="nc" id="L89">    return maxTime;</span>
+}
+
+public float getRadius() {
+<span class="nc" id="L93">    return radius;</span>
+}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

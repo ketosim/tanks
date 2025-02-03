@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Tanks.AppTest" tests="3" skipped="1" failures="0" errors="0" timestamp="2025-02-03T03:51:41" hostname="192-168-1-105.tpgi.com.au" time="6.823">
+  <properties/>
+  <testcase name="testRestartGame()" classname="Tanks.AppTest" time="3.684"/>
+  <testcase name="testGameOverDisplay()" classname="Tanks.AppTest" time="1.368"/>
+  <testcase name="testNextLevel()" classname="Tanks.AppTest" time="1.752">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Warning: the fonts "Times" and "Lucida Bright" are not available for the Java logical font "Serif", which may have unexpected appearance or behavior. Re-enable the "Times" font to remove this warning.
+Warning: the fonts "Times" and "Lucida Bright" are not available for the Java logical font "Serif", which may have unexpected appearance or behavior. Re-enable the "Times" font to remove this warning.
+]]></system-err>
+</testsuite>

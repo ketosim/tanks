@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Parachutes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Parachutes.java</span></div><h1>Parachutes.java</h1><pre class="source lang-java linenums">package Tanks;
+
+/**
+ * The Parachutes class represents a parachute system for a tank, managing the
+ * deployment and usage of parachutes, and calculating descent rates and damage.
+ */
+public class Parachutes {
+    private int count;
+    private boolean isDeployed;
+
+    public static final int SLOW_DESCENT_RATE = 60;  // pixels per second with parachute
+    public static final int FAST_DESCENT_RATE = 120; // pixels per second without parachute
+    public static final int DAMAGE_PER_PIXEL = 1;    // damage per pixel when no parachutes
+
+    /**
+     * Constructs a Parachutes object with an initial number of parachutes.
+     * @param initialCount the initial number of parachutes.
+     */
+<span class="fc" id="L19">    public Parachutes(int initialCount) {</span>
+<span class="fc" id="L20">        this.count = initialCount;</span>
+<span class="fc" id="L21">        this.isDeployed = false;</span>
+<span class="fc" id="L22">    }</span>
+
+    /**
+     * Returns the descent rate and damage information based on parachute availability.
+     * @return an array where the first element is the descent rate (pixels per second)
+     *         and the second element is the damage per pixel.
+     */
+    public int[] getDescentInfo() {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (hasParachutes()) {</span>
+<span class="fc" id="L31">            return new int[]{SLOW_DESCENT_RATE, 0};</span>
+        } else {
+<span class="fc" id="L33">            return new int[]{FAST_DESCENT_RATE, DAMAGE_PER_PIXEL};</span>
+        }
+    }
+
+   /**
+     * Checks if there are any parachutes available.
+     * @return true if there are parachutes available, false otherwise.
+     */
+    public boolean hasParachutes() {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        return count &gt; 0;</span>
+    }
+
+    /**
+     * Resets the deployment status of the parachute.
+     */
+    public void resetDeployment() {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (isDeployed) {</span>
+<span class="fc" id="L50">            System.out.println(&quot;Parachute deployment reset.&quot;);</span>
+<span class="fc" id="L51">            isDeployed = false;</span>
+        }
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * Checks and deploys a parachute if available.
+     */
+    public void checkAndDeploy() {
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">        if (!isDeployed &amp;&amp; hasParachutes()) {</span>
+<span class="fc" id="L60">            useParachute();</span>
+        }
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Uses a parachute if available and marks it as deployed.
+     */
+    public void useParachute() {
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">        if (count &gt; 0 &amp;&amp; !isDeployed) {</span>
+<span class="fc" id="L69">            System.out.println(&quot;Parachute deployed.&quot;);</span>
+<span class="fc" id="L70">            isDeployed = true;</span>
+<span class="fc" id="L71">            count--;</span>
+<span class="fc" id="L72">            System.out.println(&quot;Remaining parachutes: &quot; + count);</span>
+        } else {
+<span class="fc" id="L74">            System.out.println(&quot;No parachutes left to deploy.&quot;);</span>
+        }
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Checks if a parachute is currently deployed.
+     * @return true if a parachute is deployed, false otherwise.
+     */
+    public boolean isDeployed() {
+<span class="fc" id="L83">        return isDeployed;</span>
+    }
+
+    /**
+     * Adds one parachute to the count.
+     */
+    public void buyOneParachute() {
+<span class="fc" id="L90">        count++;</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Returns the current count of available parachutes.
+     * @return the number of available parachutes.
+     */
+    public int getCount() {
+<span class="fc" id="L98">        return count;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

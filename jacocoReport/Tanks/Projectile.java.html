@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Projectile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tanks_scaffold</a> &gt; <a href="index.source.html" class="el_package">Tanks</a> &gt; <span class="el_source">Projectile.java</span></div><h1>Projectile.java</h1><pre class="source lang-java linenums">package Tanks;
+
+import processing.core.PVector;
+import processing.core.PApplet;
+
+/**
+ * The ImpactListener interface defines a callback method for handling the
+ * impact event of a projectile.
+ */
+interface ImpactListener {
+    void onImpact(PVector location);
+}
+
+/**
+ * The Projectile class represents a projectile fired by a tank. It handles
+ * the physics of the projectile's motion, including gravity and wind effects,
+ * and checks for collisions with the terrain.
+ */
+public class Projectile {
+    private PVector position;
+    private PVector velocity;
+<span class="fc" id="L22">    private float gravity = 7.2f / App.FPS; </span>
+    private float wind; 
+    private Tank tankOwner;
+<span class="fc" id="L25">    private boolean isActive = true;  </span>
+    private ImpactListener impactListener; 
+
+
+    /**
+     * Constructs a new Projectile object.
+     * 
+     * @param start The starting position of the projectile.
+     * @param initialVelocity The initial velocity of the projectile.
+     * @param wind The wind effect on the projectile.
+     * @param owner The tank that fired the projectile.
+     */
+<span class="fc" id="L37">    public Projectile(PVector start, PVector initialVelocity, float wind, Tank owner) {</span>
+<span class="fc" id="L38">        this.position = start.copy();</span>
+<span class="fc" id="L39">        this.velocity = initialVelocity.copy();</span>
+<span class="fc" id="L40">        this.wind = wind;</span>
+<span class="fc" id="L41">        this.tankOwner = owner; </span>
+ 
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Sets the impact listener for the projectile.
+     * 
+     * @param listener The impact listener to be set.
+     */
+    public void setImpactListener(ImpactListener listener) {
+<span class="fc" id="L51">        this.impactListener = listener;</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * Checks if the projectile is active.
+     * 
+     * @return True if the projectile is active, otherwise false.
+     */
+    public boolean isActive() {
+<span class="fc" id="L60">        return isActive;</span>
+    }
+
+    /**
+     * Updates the projectile's position based on its velocity, gravity, and wind effects.
+     * Checks for collisions with the terrain and triggers the impact event if necessary.
+     * 
+     * @param terrainHeights The heights of the terrain at different x-coordinates.
+     */
+    public void update(int[] terrainHeights) {
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (!isActive) return;</span>
+
+        // Apply gravity and wind effects to the velocity
+<span class="fc" id="L73">        velocity.y += gravity;</span>
+<span class="fc" id="L74">        velocity.x += wind / App.FPS;</span>
+
+        // Update projectile position
+<span class="fc" id="L77">        position.add(velocity);</span>
+
+        // Check if the projectile's x-coordinate is within the bounds of the terrain array
+<span class="fc" id="L80">        int terrainIndex = (int) position.x;</span>
+<span class="pc bpc" id="L81" title="2 of 4 branches missed.">        if (terrainIndex &gt;= 0 &amp;&amp; terrainIndex &lt; terrainHeights.length) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            if (position.y &gt;= terrainHeights[terrainIndex]) {</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">                if (impactListener != null) {</span>
+<span class="fc" id="L84">                    impactListener.onImpact(new PVector(position.x, position.y));</span>
+                }
+<span class="fc" id="L86">                isActive = false;  // Deactivate the projectile since it hit the terrain</span>
+            }
+        }
+<span class="fc" id="L89">    }</span>
+
+    public PVector getPosition(){
+<span class="fc" id="L92">        return position;</span>
+    }
+
+    /**
+     * Displays the projectile on the screen.
+     * 
+     * @param app The PApplet instance used for drawing.
+     */
+    public void display(PApplet app) {
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (!isActive) return;</span>
+<span class="fc" id="L102">        int tankColor = app.color(tankOwner.getColor()[0], tankOwner.getColor()[1], tankOwner.getColor()[2]);</span>
+<span class="fc" id="L103">        app.fill(tankColor);</span>
+<span class="fc" id="L104">        app.stroke(0);</span>
+<span class="fc" id="L105">        app.strokeWeight(1);</span>
+<span class="fc" id="L106">        app.ellipse(position.x, position.y, 5, 5);  // Draw projectile as a simple circle</span>
+<span class="fc" id="L107">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
