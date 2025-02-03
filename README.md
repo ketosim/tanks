@@ -57,7 +57,7 @@ The game uses configuration files for customizable settings:
 - **Level files**: Defines terrain height, player starting positions, and obstacles.
 
 ## Gameplay Video
-For a quick demonstration of the game in action, check out this gameplay video:
+For a quick demonstration of the game in action
 
 [![Watch the video](https://img.youtube.com/vi/OSJUIY-3Kmg/0.jpg)](https://www.youtube.com/watch?v=OSJUIY-3Kmg)
 
